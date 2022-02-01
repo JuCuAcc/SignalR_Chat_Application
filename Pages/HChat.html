@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Hub</title>
+    <link href="../Content/StyleSheet.css" rel="stylesheet" />
+</head>
+<body ng-app="chat-app">
+    <div ng-controller="ChatController" id="chatBox">
+        <h2>iChat App</h2>
+        <div id="chatBox">
+            <ul>
+                <li ng-repeat="chat in messages">
+                    <span ng-bind="chat"></span><br />
+                </li>
+            </ul>
+        </div>
+        <div>
+            <form>
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>
+                            <input ng-model="name" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Message</td>
+                        <td>
+                            <input ng-model="message" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="reset">Clear</button>
+                        </td>
+                        <td align="right">
+                            <button ng-click="newMessage()">Send Message</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <p>
+            <br />
+            <a href="PChat.html">Try Chat Using Persistant Connection</a>
+        </p>
+    </div>
+    <script src="../Scripts/jquery-1.6.4.min.js"></script>
+    <script src="../Scripts/jquery.signalR-2.4.2.min.js"></script>
+    <script src="../signalr/hubs"></script>
+    <script src="../Scripts/angular.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+
+            var app = angular.module("chat-app", []);
+
+            app.controller("ChatController", function ($scope) {
+                $scope.name = "iChat";
+                $scope.message = "";
+                $scope.messages = [];
+                $scope.chatHub = null;
+                $scope.chatHub = $.connection.chatHub;
+
+                $.connection.hub.start().done(function () {
+                    console.log("Connection Started");
+                });
+
+
+                $scope.chatHub.client.broadcastMessage = function (name, message) {
+
+                    var newMessage = name + " : " + message;
+                    $scope.messages.push(newMessage);
+                    $scope.$apply();
+                    console.log("Message Show");
+
+                }
+
+                $scope.newMessage = function () {
+                    $scope.chatHub.server.sendMessage($scope.name, $scope.message);
+                    $scope.message = "";
+                    console.log("Message Sent");
+                }
+            });
+        }());
+    </script>
+</body>
+</html>
